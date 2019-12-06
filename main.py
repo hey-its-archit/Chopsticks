@@ -12,7 +12,7 @@ from pygame.locals import *
 class Board:
     def __init__(self, window=None):
         self.value = [[1, 1],
-                      [4, 4]]
+                      [1, 1]]
         self.rotate = False  # add here
         self.window = window
 
