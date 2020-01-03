@@ -52,10 +52,6 @@ class Players:
         self.names = []
         self.current = 0
 
-    # def accept_name(self, number):
-    #     print('Please Enter Player ' + str(number) + '\'s name')
-    #     self.name = input()
-
     def switch_player(self):
         self.current = int(not self.current)
 
@@ -274,36 +270,6 @@ class Window:
         if 0 <= amount_clicked_index <= len(options) - 1:
             return options[amount_clicked_index]
 
-    # def get_name(self):
-    #
-    #     text_input = pygame_textinput.TextInput()
-    #     text_input.text_color = colours.WHITE
-    #     text_input.cursor_color = colours.WHITE
-    #
-    #
-    #
-    #     self.screen.fill(colours.BACKGROUND)
-    #     # text_enter_name = font.render('Enter name of player No.' + str(counter + 1), False, colours.RED)
-    #     text_center = self.type('Enter name of player No.',(0,50))
-    #     # aligned = numpy.subtract(window.center, text_center)
-    #     # window.screen.blit(text_enter_name, (aligned[0], aligned[1] - 50))
-    #     pygame.display.flip()
-    #
-    #     self.screen.blit(text_input.get_surface(), self.center)
-    #     pygame.display.update()
-    #     self.clock.tick(60)
-    #     if text_input.update(events):
-    #         counter = counter + 1
-    #
-    #         player_names.append(text_input.get_text())
-    #         text_input.input_string = ''
-    #
-    #         if counter == 2:
-    #             state = "INGAME"
-    #             typer.set_player_names(player_names)
-    #             drawer.draw_points(logic.points, player, window.screen, window.size)
-    #             typer.turn(player, window.screen, window.size)
-
 
 def list_moves(board, player):
     player = int(not player)  # inverting board, remove later
@@ -334,29 +300,29 @@ def accept_input():
     return list_formed
 
 
-def minimax(board, depth, maximizingplayer):
+def minimax(board, depth, maximizing_player):
     import math
     import copy
 
     game_over, player = board.game_over()
 
     if game_over:
-        if maximizingplayer:
+        if maximizing_player:
             return -1, None
         else:
             return 1, None
     if depth == 0:
         return 0, None
     temp_board = Board()
-    if maximizingplayer:
+    if maximizing_player:
 
         max_value = -math.inf
-        moves = list_moves(board, maximizingplayer)
+        moves = list_moves(board, maximizing_player)
         for move in moves:
             temp_board.value = copy.deepcopy(board.value)
             move.make_move(temp_board)
             # temp_board.rotate_board()
-            minimax_value, minimax_result = minimax(temp_board, depth - 1, not maximizingplayer)
+            minimax_value, minimax_result = minimax(temp_board, depth - 1, not maximizing_player)
             if minimax_value > max_value:
                 max_value = minimax_value
                 best_move = move
@@ -364,13 +330,13 @@ def minimax(board, depth, maximizingplayer):
         return max_value, best_move
     else:
         min_value = math.inf
-        moves = list_moves(board, maximizingplayer)
+        moves = list_moves(board, maximizing_player)
         for move in moves:
             temp_board.value = copy.deepcopy(board.value)
 
             move.make_move(temp_board)
             # temp_board.rotate_board()
-            minimax_value, minimax_result = minimax(temp_board, depth - 1, not maximizingplayer)
+            minimax_value, minimax_result = minimax(temp_board, depth - 1, not maximizing_player)
             if minimax_value < min_value:
                 min_value = minimax_value
                 best_move = move
@@ -381,36 +347,6 @@ def minimax(board, depth, maximizingplayer):
 def testing_print(depth):
     for i in range(depth, 5):
         print(' ', end=' ')
-
-
-# def main():
-#     board = Board()
-#     players = [Player(1), Player(2)]
-#     player = players[PLAYER_1].index
-#     board.print_board()
-#     AI_ON = True
-#     while not board.game_over()[0]:
-#         if AI_ON and player == PLAYER_2:
-#             print('AI\'s turn')
-#             selected_move = minimax(board, 7, player)[1]
-#             selected_move.print_move()
-#             selected_move.make_move(board)
-#         else:
-#             move = Move(None, None, None)
-#             print(players[player].name + '\'s turn')
-#             print('Select hand to take from')
-#             move.hand_from = accept_input()
-#             print('Select hand to give to')
-#             move.hand_to = accept_input()
-#             move.value = -1
-#             move.make_move(board)
-#
-#         board.print_board()
-#         if board.game_over()[0]:
-#             print(players[player].name + ' wins!!')
-#             break
-#
-#         player = int(not player)
 
 
 def main():
@@ -435,7 +371,7 @@ def main():
     undo_points = copy.deepcopy(logic.points)
     select_amount = False
     state = "MAIN MENU"
-    # player_names = ['ABC', 'AI']
+
     counter = 0
     move = Move(None, None, None)
     while not stop:
@@ -496,17 +432,12 @@ def main():
                     if event.button == left_click:
                         window.draw_points(board)
                         mouse_position = pygame.mouse.get_pos()
-                        # rows first columns next
+
                         mouse_quadrant = (
                             (2 * mouse_position[1] / window.size[1]), (2 * mouse_position[0] / window.size[0]),)
-                        # undo_click = click
-                        # undo_player = player
-                        # undo_points = copy.deepcopy(logic.points)
-                        # undo_hand_to = hand_to
-                        # undo_hand_from = hand_from
+
                         print('og')
                         print(undo_points)
-                        # print(player, click)
 
                         if select_amount:
 
@@ -515,7 +446,7 @@ def main():
                             window.draw_points(board)
                             # board.rotate_board()
                             click = 1
-                            # player = (player + 1) % 2
+
                             select_amount = False
                             window.runner(board, players)
                         else:
@@ -539,33 +470,18 @@ def main():
                                     if move.is_valid(click, board, window):
                                         move.make_move(board)  # make a function for this ??!!??
                                         window.draw_points(board)
-                                        # board.rotate_board()
+
                                         if board.game_over()[0]:
                                             window.type(players.names[board.game_over()[1]] + ' win\'s')
                                             state = 'GAME OVER'
                                             continue
 
                                         click = 1
-                                        # player = (player + 1) % 2
 
                                         window.runner(board, players)
 
-                                    # else:  # fix this later
-                                    #     window.highlight(move.hand_from)
                     elif event.button == right_click:
                         pass
-                        # print('undo')
-                        # print(undo_points)
-                        # print(logic.points)
-                        #
-                        # click = undo_click
-                        # player = undo_player
-                        # logic.points = copy.deepcopy(undo_points)
-                        # hand_to = undo_hand_to
-                        # hand_from = undo_hand_from
-                        # if click == 2:
-                        #     # drawer.runner(logic.points, player, window.screen, window.size)
-                        #     window.runner(board, player)
 
 
 PLAYER_1 = 0
