@@ -3,7 +3,6 @@ import logic
 import pygame_textinput
 import copy
 import time
-# import numpy
 import fingers
 import pygame
 from pygame.locals import *
@@ -53,9 +52,9 @@ class Players:
         self.names = []
         self.current = 0
 
-    def accept_name(self, number):
-        print('Please Enter Player ' + str(number) + '\'s name')
-        self.name = input()
+    # def accept_name(self, number):
+    #     print('Please Enter Player ' + str(number) + '\'s name')
+    #     self.name = input()
 
     def switch_player(self):
         self.current = int(not self.current)
