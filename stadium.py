@@ -1,9 +1,5 @@
 import pygame
 from pygame.locals import *
-
-
-
-
 class Stadium:
     def __init__(self, left, top, width, height):
         self.rectangle = pygame.Rect(left, top, width, height)

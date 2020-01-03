@@ -371,17 +371,16 @@ def main():
     text_input.cursor_color = colours.WHITE
     players = Players()
 
-    window = Window((800, 800), 'Chopsticks')
-    board = Board(window)
+    board = Board(Window((800, 800), 'Chopsticks'))
     ai_on = True
 
     stop = False
     clock = pygame.time.Clock()
     background = colours.BACKGROUND
-    window.screen.fill(background)
+    board.window.screen.fill(background)
     click = undo_click = 1
     undo_points = copy.deepcopy(logic.points)
-    state = "MAIN MENU"
+    state = "NAME SELECT"
 
     counter = 0
     move = Move(None, None, None)
@@ -391,21 +390,21 @@ def main():
             selected_move = minimax(board, 7, players.current)[1]
             selected_move.print_move()
             selected_move.make_move(board)
-            window.draw_points(board)
+            board.window.draw_points(board)
             board.rotate_board()
 
-            window.runner(board, players)
+            board.window.runner(board, players)
             if board.game_over()[0]:
-                window.type(players.names[board.game_over()[1]] + ' win\'s')
+                board.window.type(players.names[board.game_over()[1]] + ' win\'s')
                 state = "GAME OVER"
 
         events = pygame.event.get()
-        if state == "MAIN MENU":
+        if state == "NAME SELECT":
 
-            window.screen.fill(background)
-            window.type('Enter name of player No.' + str(counter + 1), (0, 50))
+            board.window.screen.fill(background)
+            board.window.type('Enter name of player No.' + str(counter + 1), (0, 50))
             pygame.display.flip()
-            window.screen.blit(text_input.get_surface(), (400, 400))
+            board.window.screen.blit(text_input.get_surface(), (400, 400))
             pygame.display.update()
             clock.tick(60)
             if text_input.update(events):
@@ -414,13 +413,13 @@ def main():
                 text_input.input_string = ''
                 if counter == 2:
                     state = "INGAME"
-                    window.draw_points(board)
-                    window.type(players.names[players.current] + '\'s turn ')
+                    board.window.draw_points(board)
+                    board.window.type(players.names[players.current] + '\'s turn ')
                 elif ai_on:
                     players.names.append('Computer')
                     state = "INGAME"
-                    window.draw_points(board)
-                    window.type(players.names[players.current] + '\'s turn ')
+                    board.window.draw_points(board)
+                    board.window.type(players.names[players.current] + '\'s turn ')
         left_click = 1
         right_click = 3
 
@@ -428,54 +427,56 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == MOUSEBUTTONDOWN:
 
-                if state == "GAME OVER":
-                    print("GAME OVER")
-                    state = ""
+            if state == "GAME OVER":
+                print("GAME OVER")
+                state = ""
 
-                if state == "INGAME":
+            if state == "INGAME":
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == MOUSEBUTTONDOWN:
+                    mouse_position = pygame.mouse.get_pos()
                     if event.button == left_click:
-                        window.draw_points(board)
-                        mouse_position = pygame.mouse.get_pos()
-
+                        board.window.draw_points(board)
                         mouse_quadrant = (
-                            (2 * mouse_position[1] / window.size[1]), (2 * mouse_position[0] / window.size[0]),)
+                            (2 * mouse_position[1] / board.window.size[1]),
+                            (2 * mouse_position[0] / board.window.size[0]),)
 
-                        print('og')
                         print(undo_points)
                         if click == 1:
                             move = Move(None, None, None)
                             move.hand_from = [int(_) for _ in mouse_quadrant]
-                            if move.is_valid(click, board, window):
-                                window.highlight(move.hand_from)
+                            if move.is_valid(click, board, board.window):
+                                board.window.highlight(move.hand_from)
                                 click = 2
 
                         elif click == 2:
-                            window.highlight(move.hand_from)
+                            board.window.highlight(move.hand_from)
                             move.hand_to = [int(_) for _ in mouse_quadrant]
                             if move.hand_to[0] == move.hand_from[0]:  # make work with rotate off
                                 move.options = move.get_switch_options(board)
-                                if move.is_valid(click, board, window):
+                                if move.is_valid(click, board, board.window):
                                     move.value = board.window.get_switch_move(move.options)
                                     move.make_move(board)  # make a function for this ??!!??
-                                    window.draw_points(board)
+                                    board.window.draw_points(board)
                                     # board.rotate_board()
                                     click = 1
-                                    window.runner(board, players)
+                                    board.window.runner(board, players)
                             else:
-                                if move.is_valid(click, board, window):
+                                if move.is_valid(click, board, board.window):
                                     move.make_move(board)  # make a function for this ??!!??
-                                    window.draw_points(board)
+                                    board.window.draw_points(board)
 
                                     if board.game_over()[0]:
-                                        window.type(players.names[board.game_over()[1]] + ' win\'s')
+                                        board.window.type(players.names[board.game_over()[1]] + ' win\'s')
                                         state = 'GAME OVER'
                                         continue
 
                                     click = 1
 
-                                    window.runner(board, players)
+                                    board.window.runner(board, players)
 
                         # elif event.button == right_click:
                         #     pass
