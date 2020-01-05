@@ -1,15 +1,17 @@
 import colours
 import pygame
 import numpy
+import os
 
 pygame.init()
 player_names = ["Archit", "Ashwini"]
-font = pygame.font.SysFont('timesnewroman', 48)
+print(os.getcwd())
+font = pygame.font.Font('fonts\\roboto\\RobotoCondensed-Bold.ttf', 42)
 
 
 def set_player_names(input_names):
     global player_names
-    player_names =input_names
+    player_names = input_names
 
 
 def turn(player, screen, screen_size):
@@ -86,3 +88,40 @@ def error_zero_points(screen, screen_size):
     drawing_location = numpy.subtract(center, text_center)
     screen.blit(text, drawing_location)
     pygame.display.flip()
+
+
+def menu_options(screen, location, text):
+    global font
+
+    text = font.render(text, False, (255, 127, 80))
+    text_center = text.get_rect().center
+    drawing_location = numpy.subtract(location, text_center)
+    screen.blit(text, drawing_location)
+
+
+def about(screen, screen_size):
+    global font
+    center = (screen_size[0] / 2, screen_size[1] / 2)
+    screen.fill(colours.BACKGROUND)
+    text = font.render('Game developed by Archit', False, (255, 127, 80))
+    text_center = text.get_rect().center
+    drawing_location = numpy.subtract((center[0], 400), text_center)
+    screen.blit(text, drawing_location)
+
+    text = font.render('github handle: hey-its-archit', False, (255, 127, 80))
+    text_center = text.get_rect().center
+    drawing_location = numpy.subtract((center[0], 450), text_center)
+    screen.blit(text, drawing_location)
+
+    text = font.render('Hand art Designed by-', False, (255, 127, 80))
+    text_center = text.get_rect().center
+    drawing_location = numpy.subtract((center[0], 600), text_center)
+    screen.blit(text, drawing_location)
+
+    text = font.render('macrovector_official / Freepik', False, (255, 127, 80))
+    text_center = text.get_rect().center
+    drawing_location = numpy.subtract((center[0], 650), text_center)
+    screen.blit(text, drawing_location)
+
+    pygame.display.flip()
+

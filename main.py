@@ -6,6 +6,8 @@ import time
 import fingers
 import pygame
 import sys
+import stadium
+import typer
 from pygame.locals import *
 
 
@@ -163,6 +165,7 @@ class Window:
     def __init__(self, size, caption):
         self.size = size
         self.screen = pygame.display.set_mode(self.size)
+        self.background = colours.BACKGROUND
         self.caption = pygame.display.set_caption(caption)
         self.center = (self.size[0] / 2, self.size[1] / 2)
         self.clock = pygame.time.Clock()
@@ -193,7 +196,7 @@ class Window:
         rect_info[0] = 0  # bad stuff done so that rect starts at left of screen
         rect_info.append(self.size[0])
         rect_info.append(text_size[1])
-        pygame.draw.rect(self.screen, colours.BACKGROUND, rect_info, 0)
+        pygame.draw.rect(self.screen, self.background, rect_info, 0)
         self.screen.blit(text, drawing_location)
         pygame.display.flip()
         return text_center
@@ -201,7 +204,7 @@ class Window:
     def draw_points(self, board):
         import numpy
 
-        self.screen.fill(colours.BACKGROUND)
+        self.paint_background()
 
         images = [[None, None], [None, None]]
         rectangles = [[None, None], [None, None]]
@@ -226,7 +229,7 @@ class Window:
         rotated_rect = screenshot.get_rect(center=screen_rect.center)
 
         for i in range(0, steps):
-            self.screen.fill(colours.BACKGROUND)
+            self.paint_background()
             rotated = pygame.transform.rotate(screenshot, rotation_angle / steps * i)
             rotated_rect = rotated.get_rect(center=rotated_rect.center)
 
@@ -281,6 +284,35 @@ class Window:
                         break
 
         return options[amount_clicked_index]
+
+    def get_mouse_quadrant(self, mouse_position):
+        return (
+            (2 * mouse_position[1] / self.size[1]),
+            (2 * mouse_position[0] / self.size[0]),)
+
+    def paint_background(self):
+        self.screen.fill(self.background)
+
+    def get_text(self):
+        text_input = pygame_textinput.TextInput()
+        text_input.text_color = colours.WHITE
+        text_input.cursor_color = colours.WHITE
+        while True:
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+            if text_input.update(events):
+                return text_input.get_text()
+            self.type(text_input.get_text(), (0, -25))
+            pygame.display.update()
+            self.clock.tick(60)
+
+    def set_name(self, player_no):
+        while True:
+            self.type('Enter name of player No.' + str(player_no), (0, 50))
+            return self.get_text()
 
 
 def list_moves(board, player):
@@ -356,6 +388,63 @@ def minimax(board, depth, maximizing_player):
         return min_value, best_move
 
 
+class MainMenu:
+    def __init__(self, window):
+        self.options = []
+        self.window = window
+
+    def drawer(self, window):
+        for _ in range(0, len(self.options)):
+            self.options[_].drawer(window.screen)
+
+    def set_options(self):
+        self.options.append(stadium.Stadium(225, 275, 350, 70, "P L A Y"))
+        #self.options.append(stadium.Stadium(225, 425, 350, 70, "1  P L A Y E R"))
+        self.options.append(stadium.Stadium(225, 575, 350, 70, "A B O U T"))
+
+    def highlighter(self, mouse_position):
+        for _ in range(0, 2):
+            if self.options[_].check_collision(mouse_position):
+                self.options[_].colour = (0, 250, 154)
+            else:
+                self.options[_].colour = (18, 18, 18)
+
+    def click(self, mouse_position):
+        global state
+        global ai_on
+        if self.options[0].check_collision(mouse_position):
+            state = 'NAME SELECT'
+            return True
+        # elif self.options[1].check_collision(mouse_position):
+        #     ai_on = not ai_on
+        #     if ai_on:
+        #         self.options[1].change_text('1  P L A Y E R')
+        #     else:
+        #         self.options[1].change_text('2  P L A Y E R')
+        #     return True
+        elif self.options[1].check_collision(mouse_position):
+            state = 'ABOUT'
+            return True
+        else:
+            return False
+
+    def update(self, window):
+
+        while True:
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.click(pygame.mouse.get_pos()):
+                        return
+            self.highlighter(pygame.mouse.get_pos())
+            self.drawer(window)
+            pygame.display.update()
+            self.window.clock.tick(60)
+
+
 def testing_print(depth):
     for i in range(depth, 5):
         print(' ', end=' ')
@@ -363,28 +452,22 @@ def testing_print(depth):
 
 def main():
     pygame.init()
-
     # 0 is left and 1 is right
-
-    text_input = pygame_textinput.TextInput()
-    text_input.text_color = colours.WHITE
-    text_input.cursor_color = colours.WHITE
     players = Players()
-
+    global ai_on
+    global state
     board = Board(Window((800, 800), 'Chopsticks'))
-    ai_on = True
 
-    stop = False
-    clock = pygame.time.Clock()
-    background = colours.BACKGROUND
-    board.window.screen.fill(background)
+    board.window.paint_background()
     click = undo_click = 1
     undo_points = copy.deepcopy(logic.points)
-    state = "NAME SELECT"
 
-    counter = 0
     move = Move(None, None, None)
-    while not stop:
+
+    main_menu = MainMenu(board.window)
+    main_menu.set_options()
+
+    while True:
         if ai_on and players.current == PLAYER_2:
             pygame.time.wait(700)
             selected_move = minimax(board, 7, players.current)[1]
@@ -398,28 +481,31 @@ def main():
                 board.window.type(players.names[board.game_over()[1]] + ' win\'s')
                 state = "GAME OVER"
 
-        events = pygame.event.get()
-        if state == "NAME SELECT":
+        if state == "MAIN MENU":
+            main_menu.update(board.window)
 
-            board.window.screen.fill(background)
-            board.window.type('Enter name of player No.' + str(counter + 1), (0, 50))
-            pygame.display.flip()
-            board.window.screen.blit(text_input.get_surface(), (400, 400))
-            pygame.display.update()
-            clock.tick(60)
-            if text_input.update(events):
-                counter = counter + 1
-                players.names.append(text_input.get_text())
-                text_input.input_string = ''
-                if counter == 2:
-                    state = "INGAME"
-                    board.window.draw_points(board)
-                    board.window.type(players.names[players.current] + '\'s turn ')
-                elif ai_on:
-                    players.names.append('Computer')
-                    state = "INGAME"
-                    board.window.draw_points(board)
-                    board.window.type(players.names[players.current] + '\'s turn ')
+        if state == "NAME SELECT":
+            board.window.paint_background()
+            if ai_on:
+                players.names.append(board.window.set_name(1))
+                players.names.append('Computer')
+            else:
+                for _ in range(1, 3):
+                    players.names.append(board.window.set_name(_))
+            state = "IN GAME"
+            board.window.draw_points(board)
+            board.window.type(players.names[players.current] + '\'s turn ')
+
+        if state == "GAME OVER":
+            print("GAME OVER")
+            state = ""
+
+        if state == "ABOUT":
+            typer.about(board.window.screen, board.window.size)
+
+            print('in about')
+
+        events = pygame.event.get()
         left_click = 1
         right_click = 3
 
@@ -428,22 +514,11 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-            if state == "GAME OVER":
-                print("GAME OVER")
-                state = ""
-
-            if state == "INGAME":
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+            if state == "IN GAME":
                 if event.type == MOUSEBUTTONDOWN:
-                    mouse_position = pygame.mouse.get_pos()
+                    mouse_quadrant = board.window.get_mouse_quadrant(pygame.mouse.get_pos())
                     if event.button == left_click:
                         board.window.draw_points(board)
-                        mouse_quadrant = (
-                            (2 * mouse_position[1] / board.window.size[1]),
-                            (2 * mouse_position[0] / board.window.size[0]),)
-
                         print(undo_points)
                         if click == 1:
                             move = Move(None, None, None)
@@ -484,5 +559,7 @@ def main():
 
 PLAYER_1 = 0
 PLAYER_2 = 1
+ai_on = True
+state = 'MAIN MENU'
 if __name__ == '__main__':
     main()
