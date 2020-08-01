@@ -389,8 +389,9 @@ def minimax(board, depth, maximizing_player):
 
 
 class MainMenu:
-    def __init__(self, window):
+    def __init__(self, board, window):
         self.options = []
+        self.board = board
         self.window = window
 
     def drawer(self, window):
@@ -399,7 +400,7 @@ class MainMenu:
 
     def set_options(self):
         self.options.append(stadium.Stadium(225, 275, 350, 70, "P L A Y"))
-        #self.options.append(stadium.Stadium(225, 425, 350, 70, "1  P L A Y E R"))
+        self.options.append(stadium.Stadium(225, 425, 350, 70, "1  P L A Y E R"))
         self.options.append(stadium.Stadium(225, 575, 350, 70, "A B O U T"))
 
     def highlighter(self, mouse_position):
@@ -415,13 +416,18 @@ class MainMenu:
         if self.options[0].check_collision(mouse_position):
             state = 'NAME SELECT'
             return True
-        # elif self.options[1].check_collision(mouse_position):
-        #     ai_on = not ai_on
-        #     if ai_on:
-        #         self.options[1].change_text('1  P L A Y E R')
-        #     else:
-        #         self.options[1].change_text('2  P L A Y E R')
-        #     return True
+        elif self.options[1].check_collision(mouse_position):
+
+            if ai_on:
+                self.options[1].change_text('2  P L A Y E R')
+                ai_on = False
+                self.board.rotate = True
+
+            else:
+                self.options[1].change_text('1  P L A Y E R')
+                ai_on = True
+                self.board.rotate = False
+            return True
         elif self.options[1].check_collision(mouse_position):
             state = 'ABOUT'
             return True
@@ -464,7 +470,7 @@ def main():
 
     move = Move(None, None, None)
 
-    main_menu = MainMenu(board.window)
+    main_menu = MainMenu(board, board.window)
     main_menu.set_options()
 
     while True:
